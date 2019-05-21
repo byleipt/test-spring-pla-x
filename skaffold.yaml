@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: byleipt/test-spring-pla-x
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: test-spring-pla-x
+        chartPath: charts/test-spring-pla-x
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}'
+          image.tag: '{{.DIGEST_HEX}}'
